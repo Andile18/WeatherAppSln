@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using WeatherApp.Models;
 using WeatherApp.Services;
+using static System.Net.WebRequestMethods;
 
 namespace WeatherApp.ViewModels
 {
@@ -52,7 +53,8 @@ namespace WeatherApp.ViewModels
         {
             try
             {
-                var location = await Geolocation.GetLocationAsync();
+                var location = await Geolocation.Default.GetLocationAsync() ?? await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium));
+                ;
 
                 if (location != null)
                 {
@@ -61,9 +63,11 @@ namespace WeatherApp.ViewModels
                     if (weather != null)
                     {
                         City = weather.Name;
-                        Temperature = weather.Main.Temp;
-                        Description = weather.weather.Description;
-                        Icon = weather.weather.Icon;
+                        Temperature = (((float)weather.Main.Temp));
+                        Temperature = Math.Round(Temperature);
+                        Description = weather.Weather[0].Description;
+                        Icon = weather.Weather[0].Icon;
+                        Icon = $"https://openweathermap.org/img/wn/{Icon}@2x.png";
                     }
                 }
             }
@@ -74,7 +78,7 @@ namespace WeatherApp.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged([CallerMemberName] string name = null) =>
+        protected void OnPropertyChanged([CallerMemberName] string name = null!) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }
